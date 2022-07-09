@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="zh-hans">
+<script type="text/javascript" src="../static/js/TTS.js"></script>
+<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+
+<head>
+    <meta charset="UTF-8">
+    {#载入时清除本页缓存#}
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <title>智能监控主页</title>
+</head>
+<body onload="VoiceSpeak('{{ err_msg }}{{ msg }}{{ close_msg }}')">
+
+
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="span6">
+            <h3>
+                实时画面监控
+            </h3>
+            {% if close_msg %}
+                <h1>摄像头已关闭</h1>
+            {% else %}
+                <img alt="video" , src='http://127.0.0.1:8000/video_feed/' , class="img-rounded"/>
+            {% endif %}
+
+        </div>
+        <div class="span6">
+            <p>
+                识别信息录入
+            </p>
+            <p>
+                检测到的身份信息:
+                <span>
+                    <label id="detectedName">[]</label>
+                </span>
+            </p>
+            <form class="form-horizontal" , method="post">
+                {#  token验证              #}
+                {% csrf_token %}
+
+                <div class="msg-group">
+                    <span style="color: red" id="err_msg">{{ err_msg }}</span>
+                    <span style="color: green">{{ msg }}</span>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="inputName">姓名</label>
+                    <div class="controls">
+                        <input id="inputName" name="name" type="text" placeholder="请输入用户名" />
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="inputPassword">密码</label>
+                    <div class="controls">
+                        <input id="inputPassword" name="password" type="password" placeholder="请输入密码"/>
+                    </div>
+                </div>
+
+                <br>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn">拍照录入</button>
+                    </div>
+                </div>
+            </form>
+
+            <br>
+            {#      选择摄像头      #}
+            <form method="get">
+
+                <div class="control-group">
+                    <div class="controls">
+                        <input name="close" , value="shut" , type="hidden">
+                        <button type="submit" class="btn">关闭摄像头</button>
+                    </div>
+                </div>
+            </form>
+
+            <br>
+
+            <form method="get">
+
+                <div class="control-group">
+                    <div class="controls">
+                        <input name="open" , value="active" , type="hidden">
+                        <button type="submit" class="btn">开启摄像头</button>
+                    </div>
+                </div>
+            </form>
+
+            <br>
+
+            <select name="camID" id="camID">
+                <option value="local">本机摄像头</option>
+                <option value="usb">USB摄像头</option>
+                <option value="ip">远程IP摄像头</option>
+            </select>
+            <button class="btn" onclick="chooseCam()">选择摄像头</button>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function getMsg() {
+        const text = $("#camID").val();
+        $.ajax({
+            url: ('/send/msg/'),
+            type: 'get',
+            data: {
+                text: text
+            },
+            success: function (res) {
+                console.log("请求发送成功")
+
+            }
+        })
+    }
+
+    function postUserInfo(){
+        const name = $("#")
+    }
+
+    /*
+    setInterval(function () {
+        console.log("间隔轮询")
+        const detectName = document.getElementById('detectedName');
+        $.ajax({
+            url: ('/get/msg/'),
+            type: 'get',
+            success: function (res) {
+                console.log(res.toString())
+                detectName.innerHTML = res.name
+            }
+        })
+    }, 1000)
+    */
+
+
+</script>

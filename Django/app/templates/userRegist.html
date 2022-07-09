@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- 缓存控制 -->
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+
+    <title>实时监控</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="/static/bootstrap/css/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="/static/bootstrap/css/navbar.css" rel="stylesheet">
+
+    <style>
+        #contain {
+            display: flex;
+        }
+
+        #info {
+            margin-left: 20px;
+        }
+
+        .btn:hover {
+            background-color: lightblue;
+        }
+    </style>
+
+</head>
+
+<body onload="VoiceSpeak('{{ err_msg }}{{ msg }}{{ close_msg }}')">
+
+<div class="container">
+
+    <!-- Static navbar -->
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                        aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">智能监控</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/">主页</a></li>
+                    <li><a href="#">人员管理</a></li>
+                    <li class="active"><a href="#" style="color: white; background-color: #2b669a">信息录入</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                           aria-expanded="false">场景切换 <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">门禁</a></li>
+                            <li><a href="#">课堂监控</a></li>
+                            <li><a href="#">手势门禁</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li class="dropdown-header">Nav header</li>
+                            <li><a href="#">Separated link</a></li>
+                            <li><a href="#">One more separated link</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="active"><a href="./">Default <span class="sr-only">(current)</span></a></li>
+                    <li><a href="../navbar-static-top/">Static top</a></li>
+                    <li><a href="../navbar-fixed-top/">Fixed top</a></li>
+                </ul>
+            </div><!--/.nav-collapse -->
+        </div><!--/.container-fluid -->
+    </nav>
+
+    <!-- Main component for a primary marketing message or call to action -->
+    <div class="container" id="contain">
+        <div>
+            {% if close_msg %}
+                <h1>摄像头已关闭</h1>
+            {% else %}
+                <img alt="video" , src='http://127.0.0.1:8000/video_feed/' , class="img-rounded"/>
+            {% endif %}
+        </div>
+        <div class="span6" id="info">
+            <h3 class="text-left">
+                检测到的身份:
+                <span>
+                    <label id="detectedName">[]</label>
+                </span>
+            </h3>
+
+            <br>
+
+            <div class="bottom-right">
+                <form class="form-horizontal" , method="post">
+                    <p>
+                    <h4>识别信息录入</h4>
+                    </p>
+                    {#  token验证              #}
+                    {% csrf_token %}
+
+                    <div class="msg-group">
+                        <span style="color: red" id="err_msg">{{ err_msg }}</span>
+                        <span style="color: lightgreen">{{ msg }}</span>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="controls">
+                            <label style="font-size: larger" class="control-label" for="inputName">姓名</label>
+                            <input id="inputName" name="name" type="text" placeholder="请输入用户名"/>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="controls">
+                            <label style="font-size: larger" class="control-label" for="inputPassword">密码</label>
+                            <input id="inputPassword" name="password" type="password" placeholder="请输入密码"/>
+                        </div>
+                    </div>
+
+                    <br>
+                    <div class="control-group">
+                        <div class="controls">
+                            <button type="submit" class="btn">拍照录入</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+
+</div> <!-- /container -->
+
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"
+        integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ"
+        crossorigin="anonymous"></script>
+<script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+<script type="text/javascript" src="../static/js/TTS.js"></script>
+<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+<script src="/static/bootstrap/js/bootstrap.min.js"></script>
+<script src="/app/static/js/default.js"></script>
+<script>
+    function getMsg() {
+        const text = $("#camID").val();
+        $.ajax({
+            url: ('/send/msg/'),
+            type: 'get',
+            data: {
+                text: text
+            },
+            success: function (res) {
+                console.log("请求发送成功")
+
+            }
+        })
+    }
+
+    function postUserInfo() {
+        const name = $("#")
+    }
+
+    setInterval(function () {
+        console.log("间隔轮询")
+        const detectName = document.getElementById('detectedName');
+        $.ajax({
+            url: ('/get/msg/'),
+            type: 'get',
+            success: function (res) {
+                console.log(res.toString())
+                detectName.innerHTML = res.name
+            }
+        })
+    }, 1000)
+
+
+</script>
+
+</body>
+</html>

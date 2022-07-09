@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- 缓存控制 -->
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+
+    <title>实时监控</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="/static/bootstrap/css/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="/static/bootstrap/css/navbar.css" rel="stylesheet">
+    <style>
+        #contain {
+            display: flex;
+        }
+
+        #info {
+            margin-left: 20px;
+        }
+
+        .btn:hover {
+            background-color: lightblue;
+        }
+
+
+    </style>
+
+</head>
+
+<body onload="VoiceSpeak('{{ err_msg }}{{ msg }}{{ close_msg }}')">
+
+<div class="container">
+
+    <!-- Static navbar -->
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                        aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">智能监控</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="#" style="color: white; background-color: #2b669a">主页</a></li>
+                    <li><a href="#">人员管理</a></li>
+                    <li><a href="#" onclick="toRegister()">信息录入</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                           aria-expanded="false">场景切换 <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">门禁</a></li>
+                            <li><a href="#">课堂监控</a></li>
+                            <li><a href="#">手势门禁</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li class="dropdown-header">version 0.21</li>
+                            <li class="dropdown-header">计科186</li>
+                            <li class="dropdown-header">王添</li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="active"><a href="./">Default <span class="sr-only">(current)</span></a></li>
+                    <li><a href="../navbar-static-top/">Static top</a></li>
+                    <li><a href="../navbar-fixed-top/">Fixed top</a></li>
+                </ul>
+            </div><!--/.nav-collapse -->
+        </div><!--/.container-fluid -->
+    </nav>
+
+    <!-- Main component for a primary marketing message or call to action -->
+    <div class="container" id="contain">
+        <div id="camSpan">
+            {% if close_msg %}
+                <h1>摄像头已关闭</h1>
+            {% else %}
+                <img id="CamVideo" alt="video" , src='http://127.0.0.1:8000/video_feed/' , class="img-rounded"
+                     height="600" width="800"/>
+            {% endif %}
+        </div>
+        <div class="span6" id="info">
+            <!--摄像头管理 -->
+            <h3>已连接的摄像头: <label id="camCurrent">{{ camID }}</label></h3>
+            <div class="controls">
+
+                <button class="btn" onclick="localCam()" value="local">本机摄像头：0</button>
+                <br>
+                <button class="btn" onclick="usbCam()" value="usb">本机摄像头：1</button>
+                <br>
+                <button class="btn" onclick="IPCam()" value="ip">网络摄像头：0</button>
+            </div>
+
+            <br>
+
+            <div>
+                <button class="btn" onclick="closeCam()" style="background-color: #b92c28; color: white;">关闭摄像头</button>
+            </div>
+
+            <h3 class="text-left">
+                检测到的身份:
+            </h3>
+            <span>
+                <label id="detectedName" style="font-size: xx-large ">[]</label>
+            </span>
+
+        </div>
+    </div>
+
+
+</div> <!-- /container -->
+
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"
+        integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ"
+        crossorigin="anonymous"></script>
+<script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+<script type="text/javascript" src="../static/js/TTS.js"></script>
+<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+<script src="/static/bootstrap/js/bootstrap.min.js"></script>
+<script src="/app/static/js/default.js"></script>
+
+
+<script>
+    function localCam() {
+        const camID = $("#camID").val();
+        const camText = document.getElementById("camCurrent");
+        const videoImg = document.getElementById("CamVideo")
+        $.ajax({
+            url: ('/video/'),
+            type: 'get',
+            data: {
+                'camID': 'local'
+            },
+            success: function (res) {
+                console.log("本机摄像头切换成功")
+                self.location.reload()
+                camText.innerHTML = 'default'
+            }
+        })
+    }
+
+    function usbCam() {
+        const camID = $("#camID").val();
+        const camText = document.getElementById("camCurrent");
+        $.ajax({
+            url: ('/video/'),
+            type: 'get',
+            data: {
+                'camID': 'usb'
+            },
+            success: function (res) {
+                console.log("USB摄像头切换成功")
+                self.location.reload()
+                camText.innerHTML = 'USB'
+
+            }
+        })
+    }
+
+    function IPCam() {
+        const camID = $("#camID").val();
+        const camText = document.getElementById("camCurrent");
+        $.ajax({
+            url: ('/video/'),
+            type: 'get',
+            data: {
+                'camID': 'ip'
+            },
+            success: function (res) {
+                console.log("网络摄像头切换成功")
+                self.location.reload()
+                camText.innerHTML = 'IP'
+
+            }
+        })
+    }
+
+    function closeCam() {
+        $.ajax({
+            url: ('/video/'),
+            type: 'get',
+            data: {
+                'close': 'shut'
+            },
+            success: function (res) {
+                console.log("摄像头关闭请求成功")
+                self.location.reload()
+                document.getElementById("CamVideo").src = '../static/img/camClose.jpg'
+            }
+        })
+    }
+
+    function getMsg() {
+        $.ajax({
+            url: ('/send/msg/'),
+            type: 'get',
+            success: function (res) {
+                console.log("请求发送成功")
+
+            }
+        })
+    }
+
+    function postUserInfo() {
+        const name = $("#")
+    }
+
+    function toRegister() {
+        window.location.href = 'user/regist'
+    }
+
+    setInterval(function () {
+        console.log("间隔轮询")
+        const detectName = document.getElementById('detectedName');
+        $.ajax({
+            url: ('/get/msg/'),
+            type: 'get',
+            success: function (res) {
+                console.log(res.toString())
+                detectName.innerHTML = res.name
+            }
+        })
+    }, 1000)
+
+
+</script>
+
+</body>
+</html>
